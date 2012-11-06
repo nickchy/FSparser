@@ -37,7 +37,7 @@ $dataset{$header[8+$i*2]}={%factor};
 
  while (defined ($line = <Data>)) {
      chomp $line;
-# data clean, only include the data that in trading time
+
 	@data=split(';',$line);
 	for($i=0;$i<$NOF;$i++)
 	{
@@ -76,7 +76,7 @@ print "$factorkey \n";
    #print "$factorkey,$datekey,$quartilekey\n";
    if($dataset{$factorkey}{$datekey}{$quartilekey}[1]==0)
    {
-   $ret='';
+   $ret='NA';
    }
    else
    {
@@ -85,7 +85,7 @@ print "$factorkey \n";
    }
    print FH "$factorkey,$datekey,$quartilekey, $ret\n";
 }
-}
+}	
 }
 close FH;
 
