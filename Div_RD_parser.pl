@@ -63,6 +63,10 @@ $dataset{$header[8+$i*2]}={%factor};
 	 
 	 #get data for each factor
 	@data=split(';',$line);
+	#take out the endline symobl if there is any
+	$data[$#data] =~ s/([1-4]|'NA').*/$1/;
+	#if($data[$#data] =~ /([1-4]).*/) {$data[$#data] = $1;}
+	#parsing start
 	for($i=0; $i<$NOF; $i++)
 	{
 	if(!exists($dataset{$header[8+$i*2]}{$data[3]}))
@@ -117,7 +121,7 @@ for my $i ( 1 ... ($#dates) )
 # write the second latest date and assign the latest date time stamp on it
     foreach $quartilekey(sort { $a <=> $b } keys %{$dataset{$factorkey}{$dates[$i-1]}})
     {
-    	   print $input.'_'.$factorkey.'_'.$quartilekey."\n";
+    	   # print $input.'_'.$factorkey.'_'.$quartilekey."\n";
     #return NULL if no data fell into this quartile
    if($dataset{$factorkey}{$dates[$i-1]}{$quartilekey}[1]==0)
    {
@@ -129,11 +133,11 @@ for my $i ( 1 ... ($#dates) )
 	$dataset{$factorkey}{$dates[$i-1]}{$quartilekey}[1]; 
    }
 
-   #$id = $input.'_'.$factorkey.'_'.$quartilekey;
+   $id = $input.'_'.$factorkey.'_'.$quartilekey;
 
    #$csv->
    #print FH 
-   #print "$id,$d,$ret\n";
+   print FH "$id,$d,$ret\n";
 	}
 }
 close FH;

@@ -1,4 +1,4 @@
-# Created by Nick Yang Cai
+	# Created by Nick Yang Cai
 
 # this script parse the alpha testing raw file downloaded from factset, convert it to a quartile(or
 
@@ -13,7 +13,7 @@ $start= time();
 
 # $data store the filename for the trade data which we need to read from
 #my $file=$ARGV[0];
-my $file="/home/nick/FSparser/Source_Data/Div_RD_1_Summit_PBK.txt";
+my $file="/Users/Nick/FSparser/Source_Data/Div_RD_1_Summit_PBK.txt";
 
 # Open and read the trade data file and parsing it only drag out the data item listed in @symtrade
 open (Data, $file) or die ("Could not open $file: $!");
@@ -39,11 +39,18 @@ $dataset{$header[8+$i*2]}={%factor};
      chomp $line;
 
 	@data=split(';',$line);
+
+	#take out the endline symobl if there is any
+	#$data[$#data] =~ s/ˆ(.*)(\s*)$/$1/;
+	
+	$data[$#data] =~ s/([1-4]|'NA').*/$1/;
+	
+	#if($data[$#data] =~ /([1-4]|'NA').*/) {$data[$#data] = $1;}
 	# for($j=3;$j<=$#data;$j++)
 	# {
 	# 	print "$data[$j],";
 	# }
-	print "\n";
+	#print "\n";
      
 	for($i=0;$i<$NOF;$i++)
 	{
@@ -60,7 +67,7 @@ $dataset{$header[8+$i*2]}={%factor};
 	#print "$data[8+$i*2+1]\n";
 	if($data[5] ne 'NA' && $data[6] ne 'NA')
 	{
-		print $data[8+$i*2+1].'hahaha'."\n";
+		#print $data[8+$i*2+1].'hahaha'."\n";
 	$dataset{$header[8+$i*2]}{$data[3]}{$data[8+$i*2+1]}[0]+=($data[5]*$data[6]);
 	#print "$dataset{$header[8+$i*2]}{$data[3]}{$data[8+$i*2+1]}[1]\n";
 	$dataset{$header[8+$i*2]}{$data[3]}{$data[8+$i*2+1]}[1]+=$data[6];
@@ -72,7 +79,7 @@ $dataset{$header[8+$i*2]}={%factor};
  }
 close Data;
 #print Dumper %dataset;
-$output="/home/nick/FSparser/output.txt";
+$output="/Users/Nick/FSparser/output.txt";
 open (FH, ">$output") or die "can't open $output$!"; # <<<< outside the loop
 
 foreach my $factorkey (keys %dataset) {
@@ -90,7 +97,7 @@ foreach my $factorkey (keys %dataset) {
    $ret=$dataset{$factorkey}{$datekey}{$quartilekey}[0]/
 	$dataset{$factorkey}{$datekey}{$quartilekey}[1]; 
    }
-   # print FH "$factorkey,$datekey,$quartilekey, $ret\n";
+   print FH "$factorkey,$datekey,$quartilekey, $ret\n";
 }
 }	
 }
