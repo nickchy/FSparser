@@ -29,7 +29,7 @@ printf("\nThe Total Time Used: %6.2f\n", $end - $start);
 sub FractileParser($$)
 {
 # the AT parser function which takes two inputs
-# 1. input file name
+# 1. input file name, match part of /^Div\_RD\_(.*)\.txt/
 # 2. outpu file name
 #output a flag
 # 0 for success
