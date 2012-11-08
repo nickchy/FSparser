@@ -30,7 +30,7 @@ unless($#datafile >=0) {
 }
 #######################################################
 
-sub ATParser($$)
+sub Quartile_Return_Parser($$)
 {
 # the AT parser function which takes two inputs
 # 1. directory
@@ -145,7 +145,7 @@ close FH;
 return 0;
 }
 ##Timing tool parser
-sub FractileParser($$)
+sub Quartile_stat_Parser($$)
 {
 # the AT parser function which takes two inputs
 # 1. input file name, match part of /^Div\_RD\_(.*)\.txt/
