@@ -14,7 +14,7 @@ use List::Util qw(min max);
 
 my $start= time(); 
 #first open log
-my $log = "Div_RD_parser.log";
+my $log = "Log/Div_RD_parser.log";
 open (my $LOG, ">>$log") or exit(-1);
 #start the log
 beginLog($LOG);
@@ -44,7 +44,7 @@ unless($#datafile >=0) {
 }
 
 #get the groupid->parser mapping
-my ($flag, %Parsermapping) = Get_parsermapping($directory);
+my ($flag, %Parsermapping) = Get_parsermapping($direc, $LOG);
 
 unless($flag ==0) 
 { 
@@ -105,7 +105,7 @@ sub Get_parsermapping($$)
 	# output: a
 	# 1. flag, 0 for success, -1 for failure
 	# 2. a filled hash to store datamapping key: groupid, value @(FcnID,Num_of_Fractile)
-	my ($directory, $LOG) = @_;
+	my ($directory, $L) = @_;
 
 	#hash to store datamapping key: groupid, value @(FcnID,Num_of_Fractile)
 	%Parsermapping = ();
@@ -113,16 +113,10 @@ sub Get_parsermapping($$)
     #mapping file path
 	$mappingdir = $dir . "/Mappingtable";
 
-	# unless(-d $sourcedir) 
-	# {
-	# 	print "$mappingdir does not exists!\n";
-	# 	return (-1, %Parsermapping);
-	# }
-
 	# check if  the mapping file exists
 	unless ( open(Datam, $mappingdir.'/Parsermapping.csv') ) 
 	{
-		print $LOG "Could not find Parsermapping.csv in $mappingdir\n";
+		print $L "Could not find Parsermapping.csv in $mappingdir\n";
 		return (-1, %Parsermapping);
 	}
 
@@ -152,12 +146,12 @@ sub Fractile_Return_Parser($$$$)
 	#output a flag
 	# 0 for success
 	# -1 for failure
-	my ($directory,$input,$NumF, $LOG) = @_;
+	my ($directory,$input,$NumF, $L) = @_;
 	# Open and read the $input file
 	# open (Data, $directory.'/Source_Data/Div_RD_'.$input.'.txt') or return -1;
 	unless ( open (Data, $directory.'/Source_Data/Div_RD_'.$input.'.txt') ) 
 	{
-		print $LOG "Could not open input file: $input\n";
+		print $L "Could not open input file: $input\n";
 		return -1;
 	}
 	#read through the first line in the file, where stores the headers
@@ -204,7 +198,7 @@ sub Fractile_Return_Parser($$$$)
 			#check if fractile is valid
 			unless( exists($dataset{$header[8+$i*2]}{$data[3]}{$data[8+$i*2+1]}) )
 			{
-				print $LOG "invalid fractile number: $data[8+$i*2+1] in:\n$line\nfor file $input\n";
+				print $L "invalid fractile number: $data[8+$i*2+1] in:\n$line\nfor file $input\n";
 				return -1;
 			}
 
@@ -227,7 +221,7 @@ sub Fractile_Return_Parser($$$$)
 	#open (FH, ">>$output") or return -1; 
 	unless ( open (FH, ">>$output") ) 
 	{
-		print $LOG "Could not open output file: $output\n";
+		print $L "Could not open output file: $output\n";
 		return -1;
 	}
 	#$csv->print( $fh, \@arr );
@@ -235,7 +229,7 @@ sub Fractile_Return_Parser($$$$)
 	#first by factor
 	foreach my $factorkey (keys %dataset) 
 	{
-		print $LOG "======".$factorkey."======\n";	
+		print $L "======".$factorkey."======\n";	
 		#get the date list
 		my @dates = sort { $a <=> $b } keys %{$dataset{$factorkey}}; 
 
@@ -247,7 +241,7 @@ sub Fractile_Return_Parser($$$$)
 			   }
 			   else
 			   {
-			   	print $LOG "incorrect date format for $dates[$i]\n";
+			   	print $L "incorrect date format for $dates[$i]\n";
 			   	return -1;
 			   }
 			# write the second latest date and assign the latest date time stamp on it
@@ -289,12 +283,12 @@ sub Fractile_stat_Parser($$$$)
 	#output a flag
 	# 0 for success
 	# -1 for failure
-	my ($directory, $input, $NumF, $LOG) = @_;
+	my ($directory, $input, $NumF, $L) = @_;
 	# Open and read the $input file
 	#open (Data, $directory.'/Source_Data/Div_RD_'.$input.'.txt') or return -1;
 	unless ( open (Data, $directory.'/Source_Data/Div_RD_'.$input.'.txt') ) 
 	{
-		print $LOG "Could not open input file: $input\n";
+		print $L "Could not open input file: $input\n";
 		return -1;
 	}
 	#read through the first line in the file, where stores the headers
@@ -336,7 +330,7 @@ sub Fractile_stat_Parser($$$$)
 				#check if fractile is valid
 				unless( exists($dataset{$header[8+$i*2]}{$data[8+$i*2+1]}) )
 				{
-					print $LOG "invalid fractile number: $data[8+$i*2+1] in:\n$line\nfor file $input\n";
+					print $L "invalid fractile number: $data[8+$i*2+1] in:\n$line\nfor file $input\n";
 					return -1;
 				}
 				if(!exists($dataset{$header[8+$i*2]}{$data[8+$i*2+1]}{$data[3]}))
@@ -355,14 +349,14 @@ sub Fractile_stat_Parser($$$$)
 	#open (FH, ">$output") or return -1; 
 	unless ( open (FH, ">>$output") ) 
 	{
-		print $LOG "Could not open output file: $output\n";
+		print $L "Could not open output file: $output\n";
 		return -1;
 	}
 	#first by factor
 	foreach my $factorkey (keys %dataset) 
 	{
 		#status
-		print $LOG "======".$factorkey."======\n";	
+		print $L "======".$factorkey."======\n";	
 		#get the date list
 		foreach my $quartilekey(sort { $a <=> $b } keys %{$dataset{$factorkey}}) 
 		{
@@ -382,7 +376,7 @@ sub Fractile_stat_Parser($$$$)
 			   }
 			   else
 			   {
-				   	print $LOG "incorrect date format for $dates[$i]\n";
+				   	print $L "incorrect date format for $dates[$i]\n";
 				   	return -1;
 			   }
 			   #calculate stat variable
