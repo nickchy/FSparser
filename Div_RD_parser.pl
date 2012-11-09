@@ -108,7 +108,7 @@ finishLog($LOG);
 exit(0);
 
 #--------------------------------------------------------------------------
-# Sub functions
+# functions
 #--------------------------------------------------------------------------
 
 sub Get_parsermapping($$)
@@ -288,6 +288,7 @@ sub Fractile_Return_Parser($$$$$)
 }
 
 #--------------------------------------------------------------------------
+
 sub Fractile_stat_Parser($$$$)
 {
 	# the fractile Stat parser function which takes two inputs

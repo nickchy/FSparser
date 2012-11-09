@@ -1,7 +1,16 @@
-##File Name Foramt
-the file that come out of FactSet named in the format of
-	
-	Name:Div_RD_GroupID_SutdyName.txt
+#FactSet->Research_DB Parser 
+
+This file is the manual for Div_RD FactSet parser program. The work is organized as follows:
+
+1.	**parsers and their work environment setup**
+2.	
+
+###File Name Format[^1]
+[^1]: Items are separated by \_ , when define studies, it should 		not contain any other \_ sign 		in the name, otherwise it will mislead the parser.
+
+the file that comes out of FactSet named in a format of:
+
+	Div_RD_GroupID_SutdyName.txt
 
 for example:
 	
@@ -24,15 +33,15 @@ in the example above:
 	As introduced above, the FactorName is NegEarnings in this
 	case and this is the only factor in this study. However, the 	number of factors in each study can definitely be more than 1.
 	
-## Parsed Results Format
+### Parsed Results Format
 	
 each row of parsed results follows the format:
 	
-	GroupID_SutdyName_FactorName_Fractile_Items,value
+	GroupID_SutdyName_FactorName_Fractile_DataItems,value
 
 for example:
 	
-	Div_RD_1_SummitNegEarning_NegEarning_Q1_ret,0.013
+	Div_RD_1_SummitNegEarning_NegEarning_1_ret,0.013
 
 in the example above:
 
@@ -49,12 +58,14 @@ in the example above:
 - **FactorName : NegEarnings**  
 	As introduced above, the FactorName is NegEarnings in this
 	case and this is the only factor in this study. However, the 	number of factors in each study can definitely be more than 1.	
-- **Fractile : Q1**  
-	Here `Item` really means what kind of Fractile of this factor is presented in this record. In the example, we know that this row stores the data for factors 'Quartile 1' data.
-- **Items : ret**  
-	The Items stores what kind of calculation was performed on this factor.
-	In this example, we know that the `return` was calcualted. Items can also be stat data like `min,median,max,average` etc. 
-- **Value : 0.013"  
-	This is the value of the ID
-
-Items are sepeareted by \_ , when define studies, it should not contain any other \_ sign in the name, otherwise it will mislead the parser.  
+- **Fractile : 1**  
+	Fractile tells which fractile(1,2,3,4,5,etc) of this factor is presented in this record. 	In the example, we know that this row stores the data for factors 'Quartile 1' data.[^2]
+[^2]:	User will not directly know whether it's quartile data or decile data from the 		numeric numbers (1 for example), This is only used for mapping to DSID, to check 		the fractile property, please go directly to research database UI and view the 		tags there.
+	   
+- **DataItems : ret**  
+	The DataItems stores what kind of calculation was performed on this factor.
+	In this example, we know that the `return` was calcualted. Items can also be stat data like `min,median,max,average etc`. 
+	
+- **Value : 0.013**  
+	This is the calculated value of the DataItem introduced above.
+ 

@@ -37,7 +37,7 @@ unless(-d $rsltdir) {
 	exit(-1);
 }
 
-my $rsltfile = $rsltdir . '/Data_for_import.csv';
+my $rsltfile = $rsltdir . '/Data_for_importer.csv';
 
 #get the datatextid->dsid mapping
 my ($flag, %Parsermapping) = Get_dsidmapping($dir, $LOG);

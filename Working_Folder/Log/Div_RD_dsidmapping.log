@@ -1,4 +1,4 @@
-
+ø
 ***********Begin DSID Mapping at: 2012/11/08-20:38***********
 /home/nick/FSparser/Working_Folder/temp_output.csv does not exists!
 Mapping failed
@@ -334,6 +334,16 @@ Mapping successfully Finished
 
 Processing /home/nick/FSparser/Working_Folder/temp_output.csv......
 /home/nick/FSparser/Working_Folder/temp_output.csv completed......
+
+The Total Time Used:   0.01s
+Mapping successfully Finished
+
+==================================
+
+***********Begin DSID Mapping at: 2012/11/08-22:31***********
+
+Processing /Users/Nick/FSparser/Working_Folder/temp_output.csv......
+/Users/Nick/FSparser/Working_Folder/temp_output.csv completed......
 
 The Total Time Used:   0.01s
 Mapping successfully Finished
