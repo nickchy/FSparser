@@ -7,23 +7,23 @@ use Time::HiRes qw(time);
 use POSIX qw(strftime);
 use Cwd;
 use File::Find;
+use Data::Dumper;
 
+my $start= time();
 
-my $start= time(); 
+#get dir
+my $dir = getcwd;
 
 #first open log
-my $log = "Log/Div_RD_dsidmapping.log";
+my $log = $dir . "/Log/Div_RD_dsidmapping.log";
 open (my $LOG, ">>$log") or exit(-1);
 
 #start the log
 beginLog($LOG);
 
-#get dir
-my $dir = getcwd;
-
 #check if there is data in working folder
 my $sourcedata = $dir . '/Working_Folder/temp_output.csv';
-unless(-e $sourcedir) {
+unless(-e $sourcedata) {
 
 	failLog($LOG, "$sourcedata does not exists!\n");
 	exit(-1);
@@ -37,7 +37,7 @@ unless(-d $rsltdir) {
 	exit(-1);
 }
 
-my $rsltfile = $rsltdir . 'Data_for_import.csv';
+my $rsltfile = $rsltdir . '/Data_for_import.csv';
 
 #get the datatextid->dsid mapping
 my ($flag, %Parsermapping) = Get_dsidmapping($dir, $LOG);
@@ -48,25 +48,34 @@ unless($flag ==0)
 	exit(-1)
 } 
 
-#status
-print $LOG "\nProcessing $file......\n";
+#define a reference for hash
+$refmapping = \%Parsermapping;
 
-my $flag = Convert_DSID(%Parsermapping, $sourcedata, $rsltfile, $LOG);
+#open output handler
+	unless ( open ($FH, ">$rsltfile") ) 
+{
+	failLog($LOG, "Could not open output file: $output\n");
+	exit(-1);
+}
+#status
+print $LOG "\nProcessing $sourcedata......\n";
+
+my $flag = Convert_DSID($refmapping, $sourcedata, $FH, $LOG);
 
 if($flag != 0)
 {
-	failLog($LOG, "failed when mapping $file\n");
+	failLog($LOG, "failed when mapping $sourcedata\n");
 	exit(-1);
 }
-print $LOG "$file completed......\n";
+print $LOG "$sourcedata completed......\n";
 
 
 #finishing up
 my $end = time(); 
 printf $LOG "\nThe Total Time Used: %6.2fs\n", $end - $start;
 
+close $FH;
 finishLog($LOG);
-
 exit(0);
 
 #--------------------------------------------------------------------------
@@ -77,13 +86,14 @@ sub Get_dsidmapping($$)
 {
 	# Get_parsermapping function which takes one input
 	# 1. directory
+	# 2. output handler
 	# output: a
 	# 1. flag, 0 for success, -1 for failure
 	# 2. a filled hash to store datamapping key: groupid, value @(FcnID,Num_of_Fractile)
 	my ($directory, $L) = @_;
 
 	#hash to store datamapping key: groupid, value @(FcnID,Num_of_Fractile)
-	%Parsermapping = ();
+	my %Parsermapping = ();
     
     #mapping file path
 	$mappingdir = $dir . "/Mappingtable";
@@ -107,7 +117,7 @@ sub Get_dsidmapping($$)
 		chomp $line;
 		#get data for each factor
 		@data=split(',',$line);
-		$Parsermapping{$data[0]} = [$data[1],$data[2]];
+		$Parsermapping{$data[0]} = $data[1];
 	}
 
 	close Datam;
@@ -117,54 +127,52 @@ sub Get_dsidmapping($$)
 
 #--------------------------------------------------------------------------
 
-sub Convert_DSID(%$$$)
+sub Convert_DSID($$$$)
 {
 	# the fractile return parser function which takes two inputs
-	# 1. mapping hash
+	# 1. mapping hash reference
 	# 2. input file path
-	# 3. output file path
-	# 5. $LOG file handler
+	# 3. output file handler
+	# 4. $LOG file handler
 	#output a flag
 	# 0 for success
 	# -1 for failure
-	my (%mapping, $input, $output, $L) = @_;
-	# Open and read the $input file
-	unless ( open (Data, $file) ) 
+	my ($mapping, $input, $fh, $L) = @_;
+
+	#check if file is empty
+	if ( -z "$input" ) 
 	{
-		print $L "Could not open input file: $file\n";
-		return -1;
+   		print $L "File: $input has zero size!!\n";
+   		return -1;
 	}
-	#open output handler
-		unless ( open (FH, ">>$output") ) 
+	# Open and read the $input file
+	unless ( open (Data, "<$input") ) 
 	{
-		print $L "Could not open output file: $output\n";
+		print $L "Could not open input file: $input\n";
 		return -1;
 	}
 
 	#reading the data
-	while (defined ($line = <Data>)) 
+	while (defined (my $line = <Data>)) 
 	{
-		chomp my $line;
-
+		chomp $line;
 		#get data for each factor
 		my @data=split(',',$line);
-
 		#check if id key exists in mapping
-		unless( exists($mapping{$data[0]}) )
+		unless( exists($$mapping{$data[0]}) )
 			{
 				print $L "invalid input id: $data[0] in:\n$line\nfor file $input\n";
 				return -1;
 			}
 
-		$line =~ s/$data[0]/$mapping{$data[0]}/;
+		$line =~ s/$data[0]/$$mapping{$data[0]}/;
 		
-		print FH $line."\n";
+		print $fh $line."\n";
 
 	}
 
 	#finish up
 	close Data;
-	close FH;
 	return 0;
 }
 

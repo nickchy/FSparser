@@ -57,6 +57,15 @@ my %actions = ( 1 => \&Fractile_Return_Parser,
                 2 => \&Fractile_stat_Parser 
               );
 
+#open $output to write results
+my $output = $dir . '/Working_Folder/temp_output.csv';
+#open output
+unless ( open ($FH, ">$output") ) 
+{
+	failLog($LOG, "Could not open output file: $output\n");
+	exit(-1);
+}
+
 foreach my $file (@datafile)
 {	
 	#status
@@ -74,9 +83,10 @@ foreach my $file (@datafile)
 		failLog($LOG, "Bad GroupID: $id for $file\n");
 		exit (-1);
 	}
+
 	#find the correct parser based on parsermapping and apply the function
 	$flag = $actions{$Parsermapping{$id}[0]}->
-					($dir,$file,$Parsermapping{$id}[1], $LOG);
+					($dir, $file, $Parsermapping{$id}[1], $FH, $LOG);
 
 	if($flag != 0)
 	{
@@ -90,6 +100,8 @@ foreach my $file (@datafile)
 my $end = time(); 
 printf $LOG "\nThe Total Time Used: %6.2fs\n", $end - $start;
 
+close $FH;
+
 finishLog($LOG);
 
 exit(0);
@@ -102,6 +114,7 @@ sub Get_parsermapping($$)
 {
 	# Get_parsermapping function which takes one input
 	# 1. directory
+	# 2. logfile handler
 	# output: a
 	# 1. flag, 0 for success, -1 for failure
 	# 2. a filled hash to store datamapping key: groupid, value @(FcnID,Num_of_Fractile)
@@ -136,20 +149,30 @@ sub Get_parsermapping($$)
 
 #--------------------------------------------------------------------------
 
-sub Fractile_Return_Parser($$$$)
+sub Fractile_Return_Parser($$$$$)
 {
 	# the fractile return parser function which takes two inputs
 	# 1. directory
-	# 2. input file name,match part of /^Div\_RD\_(.*)\.txt/
+	# 2. input file name
 	# 3. number of fractile
-	# 4. $LOG file handler
+	# 4. output handler
+	# 5. $L file handler
 	#output a flag
 	# 0 for success
 	# -1 for failure
-	my ($directory,$input,$NumF, $L) = @_;
+	my ($directory, $input,$NumF, $fh, $L) = @_;
 	# Open and read the $input file
 	# open (Data, $directory.'/Source_Data/Div_RD_'.$input.'.txt') or return -1;
-	unless ( open (Data, $directory.'/Source_Data/Div_RD_'.$input.'.txt') ) 
+
+	my $filename = $directory . '/Source_Data/Div_RD_'.$input .'.txt';
+	#check if file is empty
+	if ( -z "$filename" ) 
+	{
+   		print $L "File: $input has zero size\n";
+   		return -1;
+	}
+	#open file
+	unless ( open (Data, "<$filename") ) 
 	{
 		print $L "Could not open input file: $input\n";
 		return -1;
@@ -214,16 +237,7 @@ sub Fractile_Return_Parser($$$$)
 		}
 	}
 	close Data;
-	#open $output to write results
-	$output = $directory.'/Working_Folder/temp_output.csv';
-	#open csv writer
-	#my $csv = Text::CSV->new ( { always_quote => 1 } );
-	#open (FH, ">>$output") or return -1; 
-	unless ( open (FH, ">>$output") ) 
-	{
-		print $L "Could not open output file: $output\n";
-		return -1;
-	}
+
 	#$csv->print( $fh, \@arr );
 
 	#first by factor
@@ -264,11 +278,11 @@ sub Fractile_Return_Parser($$$$)
 			   $idret = $id.'_ret';
 			   #$csv->
 			   #print FH 
-			   print FH "$idret,$d,$ret\n";
+			   print $fh "$idret,$d,$ret\n";
 			}
 		}
 	}
-	close FH;
+
 	return 0;
 }
 
@@ -277,16 +291,27 @@ sub Fractile_stat_Parser($$$$)
 {
 	# the fractile Stat parser function which takes two inputs
 	# 1. directory
-	# 2. input file name,match part of /^Div\_RD\_(.*)\.txt/
+	# 2. input file name
 	# 3. number of fractile
-	# 4. log file handler
+	# 4. output handler
+	# 5. $L file handler
 	#output a flag
 	# 0 for success
 	# -1 for failure
-	my ($directory, $input, $NumF, $L) = @_;
+	my ($directory, $input,$NumF, $fh, $L) = @_;
 	# Open and read the $input file
-	#open (Data, $directory.'/Source_Data/Div_RD_'.$input.'.txt') or return -1;
-	unless ( open (Data, $directory.'/Source_Data/Div_RD_'.$input.'.txt') ) 
+	# open (Data, $directory.'/Source_Data/Div_RD_'.$input.'.txt') or return -1;
+
+	my $filename = $directory . '/Source_Data/Div_RD_'.$input .'.txt';
+
+	#check if file is empty
+	if ( -z "$filename" ) 
+	{
+   		print $L "File: $input has zero size\n";
+   		return -1;
+	}
+	# Open and read the $input file
+	unless ( open (Data, "<$filename") ) 
 	{
 		print $L "Could not open input file: $input\n";
 		return -1;
@@ -344,15 +369,8 @@ sub Fractile_stat_Parser($$$$)
 		}
 	}
 	close Data;
-	#open $output to write results
-	$output = $directory.'/'.'Working_Folder/temp_output.csv';
-	#open (FH, ">$output") or return -1; 
-	unless ( open (FH, ">>$output") ) 
-	{
-		print $L "Could not open output file: $output\n";
-		return -1;
-	}
-	#first by factor
+
+	#first by factor, write data
 	foreach my $factorkey (keys %dataset) 
 	{
 		#status
@@ -392,11 +410,10 @@ sub Fractile_stat_Parser($$$$)
 			   $idmean = $id.'_mean';
 
 			   #output to file
-			   print FH "$idmin,$d,$mn\n$idmdn,$d,$mdn\n$idmax,$d,$mx\n$idmean,$d,$avg\n";
+			   print $fh "$idmin,$d,$mn\n$idmdn,$d,$mdn\n$idmax,$d,$mx\n$idmean,$d,$avg\n";
 			}
 		}
 	}
-	close FH;
 	return 0;
 	# return %Data;
 }
