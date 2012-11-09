@@ -12,14 +12,15 @@ use List::Util qw(min max);
 
 #use Text::CSV;
 
-my $start= time(); 
+my $start= time();
+#get path
+my $dir = getcwd; 
 #first open log
-my $log = "Log/Div_RD_parser.log";
+my $log = $dir . "/Working_Folder/Log/Div_RD_parser.log";
 open (my $LOG, ">>$log") or exit(-1);
 #start the log
 beginLog($LOG);
 
-my $dir = getcwd;
 
 chdir $dir;
 #assume there is a Source_Data folder
@@ -71,7 +72,7 @@ foreach my $file (@datafile)
 	#status
 	print $LOG "\nProcessing $file......\n";
 	my $id;
-	#find groupid
+	#find groupi
 	if($file =~ m/^(\d+)\_.*/)
 	{
 		#rint "groupid : $1 \n";
@@ -124,7 +125,7 @@ sub Get_parsermapping($$)
 	%Parsermapping = ();
     
     #mapping file path
-	$mappingdir = $dir . "/Mappingtable";
+	$mappingdir = $dir . "/Working_Folder/Mappingtable";
 
 	# check if  the mapping file exists
 	unless ( open(Datam, $mappingdir.'/Parsermapping.csv') ) 

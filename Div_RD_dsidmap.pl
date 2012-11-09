@@ -15,7 +15,7 @@ my $start= time();
 my $dir = getcwd;
 
 #first open log
-my $log = $dir . "/Log/Div_RD_dsidmapping.log";
+my $log = $dir . "/Working_Folder/Log/Div_RD_dsidmapping.log";
 open (my $LOG, ">>$log") or exit(-1);
 
 #start the log
@@ -96,7 +96,7 @@ sub Get_dsidmapping($$)
 	my %Parsermapping = ();
     
     #mapping file path
-	$mappingdir = $dir . "/Mappingtable";
+	$mappingdir = $dir . "/Working_Folder/Mappingtable";
 
 	# unless(-d $sourcedir) 
 	# {
