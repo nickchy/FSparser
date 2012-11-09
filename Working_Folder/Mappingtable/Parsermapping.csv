@@ -1,0 +1,3 @@
+GroupID,FcnID,Num_of_Fractile,FcnName
+1,1,4,Fractile_Return_Parser
+4,2,4,Fractile_stat_Parser
