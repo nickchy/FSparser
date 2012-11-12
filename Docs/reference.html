@@ -1,0 +1,331 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<style>
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote {
+    margin: 0;
+    padding: 0;
+}
+body {
+    font-family: "Helvetica Neue", Helvetica, "Hiragino Sans GB", Arial, sans-serif;
+    font-size: 13px;
+    line-height: 18px;
+    color: #737373;
+    background-color: white;
+    margin: 10px 13px 10px 13px;
+}
+table {
+	margin: 10px 0 15px 0;
+	border-collapse: collapse;
+}
+td,th {	
+	border: 1px solid #ddd;
+	padding: 3px 10px;
+}
+th {
+	padding: 5px 10px;	
+}
+
+a {
+    color: #0069d6;
+}
+a:hover {
+    color: #0050a3;
+    text-decoration: none;
+}
+a img {
+    border: none;
+}
+p {
+    margin-bottom: 9px;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: #404040;
+    line-height: 36px;
+}
+h1 {
+    margin-bottom: 18px;
+    font-size: 30px;
+}
+h2 {
+    font-size: 24px;
+}
+h3 {
+    font-size: 18px;
+}
+h4 {
+    font-size: 16px;
+}
+h5 {
+    font-size: 14px;
+}
+h6 {
+    font-size: 13px;
+}
+hr {
+    margin: 0 0 19px;
+    border: 0;
+    border-bottom: 1px solid #ccc;
+}
+blockquote {
+    padding: 13px 13px 21px 15px;
+    margin-bottom: 18px;
+    font-family:georgia,serif;
+    font-style: italic;
+}
+blockquote:before {
+    content:"\201C";
+    font-size:40px;
+    margin-left:-10px;
+    font-family:georgia,serif;
+    color:#eee;
+}
+blockquote p {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 18px;
+    margin-bottom: 0;
+    font-style: italic;
+}
+code, pre {
+    font-family: Monaco, Andale Mono, Courier New, monospace;
+}
+code {
+    background-color: #fee9cc;
+    color: rgba(0, 0, 0, 0.75);
+    padding: 1px 3px;
+    font-size: 12px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+}
+pre {
+    display: block;
+    padding: 14px;
+    margin: 0 0 18px;
+    line-height: 16px;
+    font-size: 11px;
+    border: 1px solid #d9d9d9;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+pre code {
+    background-color: #fff;
+    color:#737373;
+    font-size: 11px;
+    padding: 0;
+}
+@media screen and (min-width: 914px) {
+    body {
+        width: 854px;
+        margin:10px auto;
+    }
+}
+@media print {
+	body,code,pre code,h1,h2,h3,h4,h5,h6 {
+		color: black;
+	}
+	table, pre {
+		page-break-inside: avoid;
+	}
+}
+</style>
+<title>[Parsers and work environment](id:envi)</title>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</head>
+<body>
+<h1>FactSet Research_DB Parser </h1>
+
+<p>This is the manual for Div_RD FactSet parser program. The work is organized as follows:</p>
+
+<ol>
+<li><a href="#envi"><strong>Parsers and their work environment</strong></a></li>
+<li><a href="#logic"><strong>Parsers logic</strong></a></li>
+<li><a href="#mapping"><strong>Result files</strong></a></li>
+</ol>
+
+
+<h2><span id="envi">Parsers and work environment</span></h2>
+
+<h3>Environment</h3>
+
+<p>in order to let the parsers work, the folders should match the layout</p>
+
+<pre><code>.-- root folder
+    |-- Div_RD_parser.pl
+    |-- Div_RD_dsidmap.pl        
+    |-- Source_Data
+    |   |-- Div_RD_(\w+).txt
+    |-- Working_Folder
+    |   |-- temp_output.csv (auto generated)
+    |   |-- Mappingtable
+    |       |-- Parsermapping.csv
+    |       |-- DSIDmapping.csv
+    |   |-- Log
+    |       |-- Div_RD_dsidmapping.log (auto generated)
+    |       |-- Div_RD_parser.log (auto generated)
+    |-- Results
+    |   |-- Data_for_importer.csv (auto generated)
+    |-- Docs (optional)
+</code></pre>
+
+<h3>Parsers</h3>
+
+<p>There are two perl parsers in the root folder:</p>
+
+<ol>
+<li><strong>Div_RD_parser.pl</strong>
+
+<ul>
+<li><p>calculate aggregations and other statistical analysis on FactSet raw data files</p></li>
+<li><p>generate temp_output files with fields "parserId, date, value", which will be the
+input of Div_RD_disdmap.pl</p></li>
+</ul>
+</li>
+<li><strong>Div_RD_disidmap.pl</strong>
+
+<ul>
+<li><p>take temp_output generated from Div_RD_parser.pl as input, map each parserId to its
+  corresponding DSID in research database.</p></li>
+<li><p>generate final output file (Data_for_importer.csv), which has the format      "DSID,Date,Value"</p></li>
+</ul>
+</li>
+</ol>
+
+
+<h2><span id="logic">Parsers logic</span></h2>
+
+<p>The parsers' work flow can be summarized as below:<sup id="fnref:1"><a href="#fn:1" rel="footnote">1</a></sup></p>
+
+<hr />
+
+<pre><code>&gt;-- Call Div_RD_parser.pl
+|   |
+|   V-- Look up each Div_RD_(\w+).txt in ~/Source_Data folder
+|   |
+|   V-- parse each file and calculate the factor results
+|   |
+|   V-- open the mapping file "Parsermapping.csv" and map each factor characteristic to a 
+|       parserID in the mapping file and use that as the id in output file
+|   |
+|   V-- generate temp_output.csv file in Working_Folder and append the parsed results from
+|       each file into that csv file.
+|   
+V
+&gt;-- Call Div_RD_dsidmap.pl
+|   |
+|   v-- take the "temp_output.csv" generated by Div_RD_parser.pl as input
+|   |
+|   V-- mapping each parseID to its DSID using "DSIDmapping.csv" in 
+|       Working_Folder/Mappingtable
+|   |
+|   V-- generate "Data_for_importer.csv" in ~/Results folder, with each 
+|       parserID from temp_output.csv been replaced with DSID
+|
+|&gt;&gt; return 0 upon success, o/w return -1
+</code></pre>
+
+<h2><span id="mapping">Result files</span></h2>
+
+<h3>Source file name format<sup id="fnref:2"><a href="#fn:2" rel="footnote">2</a></sup></h3>
+
+<p>the file that comes out of FactSet named in a format of:</p>
+
+<pre><code>Div_RD_GroupID_SutdyName.txt
+</code></pre>
+
+<p>for example:</p>
+
+<pre><code>Div_RD_1_SummitNegEarning.txt
+</code></pre>
+
+<p>in the example above:</p>
+
+<ul>
+<li><p><strong>Div_RD</strong><br/>
+  This is the universal title for Diversified team Research Database FactSet Download files. Any file start with <code>Div_RD</code> should be parsed and load into database</p></li>
+<li><p><strong>GroupID : 1</strong><br/>
+  This groupid helps categorize a series of studies which belongs     to the same project. also this grouid will also be used     search for the correct parser for this file. Currently,
+  <code>all the files have the same groupid are parsed by the same parser</code></p></li>
+<li><p><strong>SutdyName : SummitNegEarning</strong><br/>
+  In this case the studyname is <code>SummitNegEarning</code>. this study is
+  a part of summit report project that runs monthly and this  specific study is for NegEarning factor.</p></li>
+<li><p><strong>FactorName : NegEarnings</strong><br/>
+  As introduced above, the FactorName is NegEarnings in this
+  case and this is the only factor in this study. However, the    number of factors in each study can definitely be more than 1.</p></li>
+</ul>
+
+
+<h3>Parsed Results Format</h3>
+
+<p>Each row in parsed results(temp_output.csv) follows the format:</p>
+
+<pre><code>GroupID_SutdyName_FactorName_Fractile_DataItems,Date,value
+</code></pre>
+
+<p>for example:</p>
+
+<pre><code>Div_RD_1_SummitNegEarning_NegEarning_1_ret, 11/01/2012, 0.013
+</code></pre>
+
+<p>in the example above:</p>
+
+<p> <strong><em>GroupID_SutdyName_FactorName_Items</em></strong> is the <code>ParseID</code> of this specific record. It maps to a unique DSID in research database, where the Value part should be stored into.</p>
+
+<ul>
+<li><p><strong>GroupID : 1</strong><br/>
+  This groupid helps categorize a series of studies which belongs     to the same project. also this groupid will also be used    search for the correct parser for this file. Currently,
+  <code>all the files have the same groupid are parsed by the same parser</code></p></li>
+<li><p><strong>SutdyName : SummitNegEarning</strong><br/>
+  In this case the studyname is <code>SummitNegEarning</code>. this study is
+  a part of summit report project that runs monthly and this  specific study is for NegEarning factor.</p></li>
+<li><p><strong>FactorName : NegEarnings</strong><br/>
+  As introduced above, the FactorName is NegEarnings in this
+  case and this is the only factor in this study. However, the    number of factors in each study can definitely be more than 1.</p></li>
+<li><strong>Fractile : 1</strong><br/>
+  Fractile tells which fractile(1,2,3,4,5,etc) of this factor is presented in this record.    In the example, we know that this row stores the data for factors 'Quartile 1' data.<sup id="fnref:3"><a href="#fn:3" rel="footnote">3</a></sup></li>
+<li><p><strong>DataItems : ret</strong><br/>
+  The DataItems stores what kind of calculation was performed on this factor.
+  In this example, we know that the <code>return</code> was calculated. Items can also be stat data like <code>min,median,max,average etc</code>.</p></li>
+<li><p><strong>Date :  11/01/2012</strong><br/>
+  The Date is in the format of %m/%d/%Y</p></li>
+<li><p><strong>Value : 0.013</strong><br/>
+  This is the calculated value of the DataItem introduced above.</p></li>
+</ul>
+
+
+<p>After calling DSIDmapping.pl, in "Data_for_importer.csv", the final output follows the format:</p>
+
+<pre><code>DSID,Date,value
+12,11/01/2012,0.013
+</code></pre>
+
+<p>Later, this file will be used as input for the Research database importer.</p>
+<div class="footnotes">
+<hr/>
+<ol>
+<li id="fn:1">
+<p>log files are stored in ~/Working_Folder/Log/ folder.  <a href="#fnref:1" rev="footnote">&#8617;</a></p></li>
+<li id="fn:2">
+<p>Items are separated by _ , when define studies, it should        not contain any other _ sign       in the name, otherwise it will mislead the parser.<a href="#fnref:2" rev="footnote">&#8617;</a></p></li>
+<li id="fn:3">
+<p>User will not directly know the number of fractiles, This is only used for mapping to DSID.         To check the fractile property, please go directly to research database UI and view the         tags there.<a href="#fnref:3" rev="footnote">&#8617;</a></p></li>
+</ol>
+</div>
+
+</body>
+</html>
